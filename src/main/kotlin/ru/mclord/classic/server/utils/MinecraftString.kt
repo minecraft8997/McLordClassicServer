@@ -24,6 +24,16 @@ data class MinecraftString(val originalString: String) {
             throw IllegalArgumentException("Input string must be <= 64 bytes")
     }
 
+    val normalString: String by lazy {
+        for (i in (originalString.length - 1) downTo 0) {
+            if (originalString[i] != ' ') {
+                return@lazy originalString.substring(0, i + 1)
+            }
+        }
+
+        ""
+    }
+
     val minecraftString: ByteArray by lazy {
         val strBytes = originalString.toByteArray(Charset.forName("US-ASCII"))
 
@@ -37,7 +47,6 @@ data class MinecraftString(val originalString: String) {
 
         dataOutputStream.close()
         val result = byteArrayOutputStream.toByteArray()
-        println("[DEBUG] minecraftString length: ${result.size}")
         result
     }
 }

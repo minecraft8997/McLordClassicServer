@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
 import ru.mclord.classic.server.messages.stoc.ServerToClientMessage
 
-class PacketEncoder : MessageToByteEncoder<ServerToClientMessage>() {
+class MessageEncoder : MessageToByteEncoder<ServerToClientMessage>() {
     override fun encode (
         ctx: ChannelHandlerContext,
         msg: ServerToClientMessage,

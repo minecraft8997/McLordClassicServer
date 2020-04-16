@@ -8,8 +8,8 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
-import ru.mclord.classic.server.codec.PacketDecoder
-import ru.mclord.classic.server.codec.PacketEncoder
+import ru.mclord.classic.server.codec.MessageDecoder
+import ru.mclord.classic.server.codec.MessageEncoder
 
 fun main() {
     val bossGroup = NioEventLoopGroup()
@@ -23,8 +23,8 @@ fun main() {
             override fun initChannel(ch: SocketChannel) {
                 val pipeline: ChannelPipeline = ch.pipeline()
 
-                pipeline.addLast(PacketDecoder())
-                pipeline.addLast(PacketEncoder())
+                pipeline.addLast(MessageDecoder())
+                pipeline.addLast(MessageEncoder())
 
                 pipeline.addLast(ServerHandler)
             }

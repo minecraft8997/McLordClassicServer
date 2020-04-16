@@ -13,7 +13,7 @@ import ru.mclord.classic.server.utils.MinecraftString.Companion.readMinecraftStr
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 
-class PacketDecoder : ByteToMessageDecoder() {
+class MessageDecoder : ByteToMessageDecoder() {
     override fun decode(
         ctx: ChannelHandlerContext,
         packet: ByteBuf,
@@ -50,6 +50,7 @@ class PacketDecoder : ByteToMessageDecoder() {
                     val userName = packetData.readMinecraftString()
                     val verificationKey = packetData.readMinecraftString()
                     packetData.readByte() // unused
+
                     //val unused = packetData.readByte().toInt() and 0xFF
                     //if (unused != 0x00)
                     //    throw ProtocolException("unused: $unused")
@@ -76,19 +77,26 @@ class PacketDecoder : ByteToMessageDecoder() {
                 }
 
                 CToSPositionAndOrientationMessage.PACKET_ID -> {
-                    if (packetData.available() != CToSPositionAndOrientationMessage.PACKET_LEN - 1)
-                        throw ProtocolException()
+                    println("Received PositionAndOrientation")
+                    //if (packetData.available() != CToSPositionAndOrientationMessage.PACKET_LEN - 1)
+                    //    throw ProtocolException("${packetData.available()} ${CToSPositionAndOrientationMessage.PACKET_LEN - 1}")
 
-                    val playerID = packetData.readByte().toInt() and 0xFF
-                    if (playerID != 0xFF) throw ProtocolException()
-                    val x = packetData.readShort()
-                    val y = packetData.readShort()
-                    val z = packetData.readShort()
-                    val yaw = packetData.readByte().toInt() and 0xFF
-                    val pitch = packetData.readByte().toInt() and 0xFF
+                    println(packetData.available())
+                    do {
+                        val playerID = packetData.readByte().toInt() and 0xFF
+                        if (playerID != 0xFF) throw ProtocolException()
+                        val x = packetData.readShort()
+                        val y = packetData.readShort()
+                        val z = packetData.readShort()
+                        val yaw = packetData.readByte().toInt() and 0xFF
+                        val pitch = packetData.readByte().toInt() and 0xFF
 
-                    out += CToSPositionAndOrientationMessage(
-                        playerID, x, y, z, yaw, pitch
+                        out += CToSPositionAndOrientationMessage(
+                            playerID, x, y, z, yaw, pitch
+                        )
+                    } while (
+                        packetData.available() > 0 &&
+                        packetData.readByte().toInt() and 0xFF == CToSPositionAndOrientationMessage.PACKET_ID
                     )
                 }
 
@@ -113,10 +121,11 @@ class PacketDecoder : ByteToMessageDecoder() {
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-        when (cause) {
+        when (cause.cause) {
             is ProtocolException -> {
                 println(cause.message)
-                disconnect(ctx.channel(), "Are you playing via official McLord Classic Client?")
+                cause.printStackTrace()
+                //disconnect(ctx.channel(), "Are you playing via official McLord Classic Client?")
             }
 
             else -> {
